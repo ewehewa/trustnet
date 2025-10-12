@@ -58,7 +58,7 @@
               <tr>
                 <td>${{ number_format($withdrawal->amount, 2) }}</td>
                 <td>{{ strtoupper($withdrawal->receiving_mode) }}</td>
-                <td>{{ $withdrawal->wallet_address }}</td>
+                <td>{{ $withdrawal->address }}</td>
                 <td>
                   <span class="status-badge {{ $withdrawal->status ?? 'pending' }}">
                     {{ ucfirst($withdrawal->status ?? 'pending') }}

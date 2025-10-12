@@ -205,38 +205,50 @@
 
 
 
-    <!-- WITHDRAWAL HISTORY -->
-    <div class="card-box">
-      <h5>Withdrawal History</h5>
-      <div class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>Amount</th>
-              <th>Method</th>
-              <th>Wallet</th>
-              <th>Status</th>
+   <!-- WITHDRAWAL HISTORY -->
+  <div class="card-box">
+    <h5>Withdrawal History</h5>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Wallet</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @forelse($user->withdrawals->sortByDesc('created_at') as $withdrawal)
+            <tr id="withdrawal-row-{{ $withdrawal->id }}">
+              <td>${{ number_format($withdrawal->amount, 2) }}</td>
+              <td>{{ $withdrawal->receiving_mode }}</td>
+              <td>{{ $withdrawal->address }}</td>
+              <td class="withdrawal-status">
+                <span class="badge {{ $withdrawal->status === 'pending' ? 'badge-pending' : 'badge-approved' }}">
+                  {{ ucfirst($withdrawal->status) }}
+                </span>
+              </td>
+              <td class="withdrawal-action">
+                @if($withdrawal->status === 'pending')
+                  <button class="btn btn-primary btn-sm" onclick="approveWithdrawal({{ $withdrawal->id }}, this)">
+                    Approve
+                  </button>
+                @else
+                  -
+                @endif
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            @forelse($user->withdrawals->sortByDesc('created_at') as $withdrawal)
-              <tr>
-                <td>${{ number_format($withdrawal->amount, 2) }}</td>
-                <td>{{ $withdrawal->receiving_mode }}</td>
-                <td>{{ $withdrawal->address }}</td>
-                <td>
-                  <span class="badge {{ $withdrawal->status === 'pending' ? 'badge-pending' : 'badge-approved' }}">
-                    {{ ucfirst($withdrawal->status) }}
-                  </span>
-                </td>
-              </tr>
-            @empty
-              <tr><td colspan="4">No withdrawals found.</td></tr>
-            @endforelse
-          </tbody>
-        </table>
-      </div>
+          @empty
+            <tr><td colspan="5">No withdrawals found.</td></tr>
+          @endforelse
+        </tbody>
+      </table>
     </div>
+  </div>
+
+
 
     <!-- INVESTMENT HISTORY -->
     <div class="card-box">
@@ -648,5 +660,37 @@ function submitRemoveBonus(userId) {
     btn.innerText = 'Remove Bonus';
   });
 }
+
+function approveWithdrawal(withdrawalId, btn) {
+  btn.disabled = true;
+  btn.innerText = 'Approving...';
+
+  fetch(`/admin/withdrawals/${withdrawalId}/approve`, {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': '{{ csrf_token() }}',
+      'Accept': 'application/json'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      toastr.success(data.message);
+      document.querySelector(`#withdrawal-row-${withdrawalId} .withdrawal-status`).innerHTML =
+        `<span class="badge badge-approved">Approved</span>`;
+      document.querySelector(`#withdrawal-row-${withdrawalId} .withdrawal-action`).innerHTML = '-';
+    } else {
+      toastr.error(data.message);
+      btn.disabled = false;
+      btn.innerText = 'Approve';
+    }
+  })
+  .catch(() => {
+    toastr.error('Something went wrong.');
+    btn.disabled = false;
+    btn.innerText = 'Approve';
+  });
+}
+
   </script>
 </x-admin>

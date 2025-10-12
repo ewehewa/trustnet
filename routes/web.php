@@ -6,6 +6,7 @@ use App\Http\Controllers\DepositController;
 use App\Http\Controllers\InvestmentController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\WithdrawalController;
+use App\Http\Controllers\Admin\WithdrawalController as AdminWithdrawalController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\BonusController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -113,6 +114,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/wallets/{id}', [AdminDashboardController::class, 'deleteWallet'])->name('wallets.destroy');
 
         Route::get('/withdrawals', [WithdrawalController::class, 'showWithdrawalHistory'])->name('withdrawals');
+        Route::post('/withdrawals/{id}/approve', [AdminWithdrawalController::class, 'approve'])->name('withdrawals.approve');
 
         //traders
         Route::get('/traders/create', [TraderController::class, 'showTradersForm'])->name('traders.create');

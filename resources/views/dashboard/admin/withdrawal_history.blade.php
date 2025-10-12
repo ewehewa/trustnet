@@ -124,6 +124,35 @@
       background-color: #f8f9fa;
       cursor: not-allowed;
     }
+    .btn-approve {
+  background-color: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.btn-approve:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-approve:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner-border {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
   </style>
 
   <div class="container-fluid">
@@ -141,11 +170,12 @@
                 <th>Method</th>
                 <th>Status</th>
                 <th>Date</th>
+                <th>Action</th> <!-- ADDED Action column -->
               </tr>
             </thead>
             <tbody>
               @foreach ($withdrawals as $index => $withdrawal)
-                <tr>
+                <tr id="withdrawal-{{ $withdrawal->id }}">
                   <td data-label="#">{{ $withdrawals->firstItem() + $index }}</td>
                   <td data-label="User">{{ $withdrawal->user->name ?? '-' }}</td>
                   <td data-label="Amount">${{ number_format($withdrawal->amount, 2) }}</td>
@@ -153,14 +183,34 @@
                   <td data-label="Status">
                     <span class="badge 
                       {{ $withdrawal->status === 'pending' ? 'badge-pending' : 
-                         ($withdrawal->status === 'approved' ? 'badge-approved' : 'badge-rejected') }}">
+                        ($withdrawal->status === 'approved' ? 'badge-approved' : 'badge-rejected') }}"
+                      id="status-{{ $withdrawal->id }}">
                       {{ ucfirst($withdrawal->status) }}
                     </span>
                   </td>
                   <td data-label="Date">{{ $withdrawal->created_at->format('d M Y') }}</td>
+                  <td data-label="Action">
+                    @if($withdrawal->status === 'pending')
+                      <button
+                        class="btn-approve"
+                        onclick="approveWithdrawal(this)"
+                        data-id="{{ $withdrawal->id }}"
+                        data-url="{{ route('admin.withdrawals.approve', $withdrawal->id) }}"
+                      >
+                        <span class="btn-text">Approve</span>
+                        <span class="btn-loading d-none">
+                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                          Approving...
+                        </span>
+                      </button>
+                    @else
+                      <span class="text-muted">-</span>
+                    @endif
+                  </td>
                 </tr>
               @endforeach
             </tbody>
+
           </table>
         </div>
 
@@ -172,4 +222,52 @@
       @endif
     </div>
   </div>
+
+  <script>
+    function approveWithdrawal(button) {
+      const id = button.dataset.id;
+      const url = button.dataset.url;
+
+      const text = button.querySelector('.btn-text');
+      const loading = button.querySelector('.btn-loading');
+
+      text.classList.add('d-none');
+      loading.classList.remove('d-none');
+      button.disabled = true;
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+          'Accept': 'application/json'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const status = document.getElementById(`status-${id}`);
+          status.textContent = 'Approved';
+          status.classList.remove('badge-pending');
+          status.classList.add('badge-approved');
+
+          button.remove();
+          toastr.success(data.message || 'Withdrawal approved!');
+        } else {
+          toastr.error(data.message || 'Something went wrong.');
+          resetBtn();
+        }
+      })
+      .catch(() => {
+        toastr.error('Network error.');
+        resetBtn();
+      });
+
+      function resetBtn() {
+        text.classList.remove('d-none');
+        loading.classList.add('d-none');
+        button.disabled = false;
+      }
+    }
+  </script>
+
 </x-admin>

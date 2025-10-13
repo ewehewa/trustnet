@@ -51,6 +51,8 @@
 
     .badge-approved { background-color: #10b981; }
     .badge-pending { background-color: #f59e0b; }
+    .badge-declined { background-color: #dc2626; }
+
 
     .btn-proof {
       background-color: #6c63ff;
@@ -77,6 +79,35 @@
     .btn-approve:hover {
       background-color: #1d4ed8;
     }
+
+    .btn-decline {
+  background-color: #dc2626;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-decline:hover {
+  background-color: #b91c1c;
+}
+
+.d-flex.gap-2 {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .d-flex.gap-2 {
+    flex-direction: column;
+  }
+}
+
 
     .spinner-border {
       width: 16px;
@@ -206,18 +237,33 @@
                 <td data-label="Date">{{ $deposit->created_at->format('d M Y') }}</td>
                 <td data-label="Action">
                   @if($deposit->status === 'pending')
-                    <button
-                      class="btn-approve"
-                      onclick="approveDeposit(this)"
-                      data-id="{{ $deposit->id }}"
-                      data-url="{{ route('admin.deposits.approve', $deposit->id) }}"
-                    >
-                      <span class="btn-text">Approve</span>
-                      <span class="btn-loading d-none">
-                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                        Approving...
-                      </span>
-                    </button>
+                    <div class="d-flex flex-wrap gap-2">
+                      <button
+                        class="btn-approve"
+                        onclick="approveDeposit(this)"
+                        data-id="{{ $deposit->id }}"
+                        data-url="{{ route('admin.deposits.approve', $deposit->id) }}"
+                      >
+                        <span class="btn-text">Approve</span>
+                        <span class="btn-loading d-none">
+                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                          Approving...
+                        </span>
+                      </button>
+
+                      <button
+                        class="btn-decline"
+                        onclick="declineDeposit(this)"
+                        data-id="{{ $deposit->id }}"
+                        data-url="{{ route('admin.deposits.decline', $deposit->id) }}"
+                      >
+                        <span class="btn-text">Decline</span>
+                        <span class="btn-loading d-none">
+                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                          Declining...
+                        </span>
+                      </button>
+                    </div>
                   @else
                     <span class="text-muted">-</span>
                   @endif
@@ -283,5 +329,55 @@
         button.disabled = false;
       }
     }
+
+function declineDeposit(button) {
+  const id = button.dataset.id;
+  const url = button.dataset.url;
+
+  const text = button.querySelector('.btn-text');
+  const loading = button.querySelector('.btn-loading');
+
+  // Show loader
+  text.classList.add('d-none');
+  loading.classList.remove('d-none');
+  button.disabled = true;
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+      'Accept': 'application/json'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      const status = document.getElementById(`status-${id}`);
+      status.textContent = 'Declined';
+      status.classList.remove('badge-pending', 'badge-approved');
+      status.classList.add('badge-declined'); // ✅ Use correct class name
+
+      // Remove both buttons after action
+      button.closest('.d-flex').remove();
+      toastr.info(data.message || 'Deposit declined.');
+    } else {
+      toastr.error(data.message || 'Something went wrong.');
+      resetBtn();
+    }
+  })
+  .catch(() => {
+    toastr.error('Network error.');
+    resetBtn();
+  });
+
+  function resetBtn() {
+    text.classList.remove('d-none');
+    loading.classList.add('d-none');
+    button.disabled = false;
+  }
+}
+
+
+
   </script>
 </x-admin>

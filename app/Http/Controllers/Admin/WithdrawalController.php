@@ -42,4 +42,21 @@ class WithdrawalController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    public function declineWithdrawal($id)
+    {
+        try {
+            $withdrawal = Withdrawal::findOrFail($id);
+            if ($withdrawal->status !== 'pending') {
+                return response()->json(['success' => false, 'message' => 'Withdrawal already processed.']);
+            }
+
+            $withdrawal->status = 'declined';
+            $withdrawal->save();
+
+            return response()->json(['success' => true, 'message' => 'Withdrawal declined successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'An error occurred while declining.']);
+        }
+    }
 }

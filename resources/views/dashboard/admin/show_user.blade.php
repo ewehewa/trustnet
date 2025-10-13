@@ -94,6 +94,55 @@
       .card-box { margin: 10px; }
       table { font-size: 13px; }
     }
+
+    .btn-approve,
+.btn-decline {
+  border: none;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.btn-approve {
+  background-color: #2563eb;
+  color: #fff;
+}
+
+.btn-approve:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-decline {
+  background-color: #ef4444;
+  color: #fff;
+  margin-left: 6px; /* 👈 adds horizontal space between buttons */
+}
+
+.btn-decline:hover {
+  background-color: #dc2626;
+}
+
+.btn-approve:disabled,
+.btn-decline:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 📱 On small screens, stack buttons vertically */
+@media (max-width: 768px) {
+  .btn-approve,
+  .btn-decline {
+    display: block;
+    width: 100%;
+    margin: 6px 0; /* vertical spacing */
+  }
+}
+
   </style>
 
   <div class="container-fluid">
@@ -161,10 +210,16 @@
                 </td>
                 <td class="deposit-action">
                   @if($deposit->status === 'pending')
-                    <button class="btn btn-primary btn-sm" onclick="approveDeposit({{ $deposit->id }}, this)">Approve</button>
+                    <button class="btn btn-primary btn-sm mb-1" onclick="approveDeposit({{ $deposit->id }}, this)">
+                      Approve
+                    </button>
+                    <button class="btn btn-danger btn-sm mb-1" onclick="declineDeposit({{ $deposit->id }}, this)">
+                      Decline
+                    </button>
                   @else
                     -
                   @endif
+
                 </td>
               </tr>
             @empty
@@ -232,12 +287,16 @@
               </td>
               <td class="withdrawal-action">
                 @if($withdrawal->status === 'pending')
-                  <button class="btn btn-primary btn-sm" onclick="approveWithdrawal({{ $withdrawal->id }}, this)">
+                  <button class="btn btn-primary btn-sm mb-1" onclick="approveWithdrawal({{ $withdrawal->id }}, this)">
                     Approve
+                  </button>
+                  <button class="btn btn-danger btn-sm mb-1" onclick="declineWithdrawal({{ $withdrawal->id }}, this)">
+                    Decline
                   </button>
                 @else
                   -
                 @endif
+
               </td>
             </tr>
           @empty
@@ -691,6 +750,71 @@ function approveWithdrawal(withdrawalId, btn) {
     btn.innerText = 'Approve';
   });
 }
+
+function declineWithdrawal(withdrawalId, btn) {
+
+  btn.disabled = true;
+  btn.innerText = 'Declining...';
+
+  fetch(`/admin/withdrawals/${withdrawalId}/decline`, {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': '{{ csrf_token() }}',
+      'Accept': 'application/json'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      toastr.warning(data.message);
+      document.querySelector(`#withdrawal-row-${withdrawalId} .withdrawal-status`).innerHTML =
+        `<span class="badge badge-pending" style="background-color:#ef4444">Declined</span>`;
+      document.querySelector(`#withdrawal-row-${withdrawalId} .withdrawal-action`).innerHTML = '-';
+    } else {
+      toastr.error(data.message);
+      btn.disabled = false;
+      btn.innerText = 'Decline';
+    }
+  })
+  .catch(() => {
+    toastr.error('Something went wrong.');
+    btn.disabled = false;
+    btn.innerText = 'Decline';
+  });
+}
+
+function declineDeposit(depositId, btn) {
+  btn.disabled = true;
+  btn.innerText = 'Declining...';
+
+  fetch(`/admin/deposits/${depositId}/decline`, {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': '{{ csrf_token() }}',
+      'Accept': 'application/json'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      toastr.warning(data.message);
+      document.querySelector(`#deposit-row-${depositId} .deposit-status`).innerHTML =
+        `<span class="badge badge-pending" style="background-color:#ef4444">Declined</span>`;
+      document.querySelector(`#deposit-row-${depositId} .deposit-action`).innerHTML = '-';
+    } else {
+      toastr.error(data.message);
+      btn.disabled = false;
+      btn.innerText = 'Decline';
+    }
+  })
+  .catch(() => {
+    toastr.error('Something went wrong.');
+    btn.disabled = false;
+    btn.innerText = 'Decline';
+  });
+}
+
+
 
   </script>
 </x-admin>

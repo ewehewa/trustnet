@@ -124,34 +124,42 @@
       background-color: #f8f9fa;
       cursor: not-allowed;
     }
-    .btn-approve {
-  background-color: #2563eb;
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  font-size: 13px;
-  border-radius: 6px;
-  cursor: pointer;
+   .btn-group {
   display: flex;
-  align-items: center;
   gap: 8px;
-  transition: background-color 0.2s ease-in-out;
+}
+
+.btn-action {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-approve {
+  background-color: #10b981;
 }
 
 .btn-approve:hover {
-  background-color: #1d4ed8;
+  background-color: #0d946a;
 }
 
-.btn-approve:disabled {
+.btn-decline {
+  background-color: #ef4444;
+}
+
+.btn-decline:hover {
+  background-color: #c53030;
+}
+
+.btn-action:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.spinner-border {
-  width: 16px;
-  height: 16px;
-  border-width: 2px;
-}
 
   </style>
 
@@ -191,22 +199,38 @@
                   <td data-label="Date">{{ $withdrawal->created_at->format('d M Y') }}</td>
                   <td data-label="Action">
                     @if($withdrawal->status === 'pending')
-                      <button
-                        class="btn-approve"
-                        onclick="approveWithdrawal(this)"
-                        data-id="{{ $withdrawal->id }}"
-                        data-url="{{ route('admin.withdrawals.approve', $withdrawal->id) }}"
-                      >
-                        <span class="btn-text">Approve</span>
-                        <span class="btn-loading d-none">
-                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                          Approving...
-                        </span>
-                      </button>
+                      <div class="btn-group">
+                        <button
+                          class="btn-action btn-approve"
+                          onclick="handleWithdrawalAction(this, 'approve')"
+                          data-id="{{ $withdrawal->id }}"
+                          data-url="{{ route('admin.withdrawals.approve', $withdrawal->id) }}"
+                        >
+                          <span class="btn-text">Approve</span>
+                          <span class="btn-loading d-none">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Processing...
+                          </span>
+                        </button>
+
+                        <button
+                          class="btn-action btn-decline"
+                          onclick="handleWithdrawalAction(this, 'decline')"
+                          data-id="{{ $withdrawal->id }}"
+                          data-url="{{ route('admin.withdrawals.decline', $withdrawal->id) }}"
+                        >
+                          <span class="btn-text">Decline</span>
+                          <span class="btn-loading d-none">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Processing...
+                          </span>
+                        </button>
+                      </div>
                     @else
                       <span class="text-muted">-</span>
                     @endif
                   </td>
+
                 </tr>
               @endforeach
             </tbody>
@@ -223,51 +247,53 @@
     </div>
   </div>
 
-  <script>
-    function approveWithdrawal(button) {
-      const id = button.dataset.id;
-      const url = button.dataset.url;
+<script>
+  function handleWithdrawalAction(button, action) {
+    const id = button.dataset.id;
+    const url = button.dataset.url;
+    const text = button.querySelector('.btn-text');
+    const loading = button.querySelector('.btn-loading');
 
-      const text = button.querySelector('.btn-text');
-      const loading = button.querySelector('.btn-loading');
+    text.classList.add('d-none');
+    loading.classList.remove('d-none');
+    button.disabled = true;
 
-      text.classList.add('d-none');
-      loading.classList.remove('d-none');
-      button.disabled = true;
-
-      fetch(url, {
-        method: 'POST',
-        headers: {
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-          'Accept': 'application/json'
-        }
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          const status = document.getElementById(`status-${id}`);
-          status.textContent = 'Approved';
-          status.classList.remove('badge-pending');
-          status.classList.add('badge-approved');
-
-          button.remove();
-          toastr.success(data.message || 'Withdrawal approved!');
-        } else {
-          toastr.error(data.message || 'Something went wrong.');
-          resetBtn();
-        }
-      })
-      .catch(() => {
-        toastr.error('Network error.');
-        resetBtn();
-      });
-
-      function resetBtn() {
-        text.classList.remove('d-none');
-        loading.classList.add('d-none');
-        button.disabled = false;
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+        'Accept': 'application/json'
       }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const status = document.getElementById(`status-${id}`);
+        status.textContent = action === 'approve' ? 'Approved' : 'declined';
+        status.classList.remove('badge-pending');
+        status.classList.add(action === 'approve' ? 'badge-approved' : 'badge-rejected');
+
+        // Remove both buttons
+        button.closest('.btn-group').remove();
+
+        toastr.success(data.message || `Withdrawal ${action}d successfully.`);
+      } else {
+        toastr.error(data.message || 'Something went wrong.');
+        resetBtn();
+      }
+    })
+    .catch(() => {
+      toastr.error('Network error.');
+      resetBtn();
+    });
+
+    function resetBtn() {
+      text.classList.remove('d-none');
+      loading.classList.add('d-none');
+      button.disabled = false;
     }
-  </script>
+  }
+</script>
+
 
 </x-admin>

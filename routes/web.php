@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepositController;
+use App\Http\Controllers\Admin\DepositController as AdminDepositController;
 use App\Http\Controllers\InvestmentController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\WithdrawalController;
@@ -115,6 +116,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('/withdrawals', [WithdrawalController::class, 'showWithdrawalHistory'])->name('withdrawals');
         Route::post('/withdrawals/{id}/approve', [AdminWithdrawalController::class, 'approve'])->name('withdrawals.approve');
+        Route::post('/withdrawals/{id}/decline', [AdminWithdrawalController::class, 'declineWithdrawal'])->name('withdrawals.decline');
+        Route::post('/deposits/{id}/decline', [AdminDepositController::class, 'decline'])->name('deposits.decline');
+
+
 
         //traders
         Route::get('/traders/create', [TraderController::class, 'showTradersForm'])->name('traders.create');

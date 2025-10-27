@@ -1,15 +1,17 @@
 <x-admin>
   <style>
-  #profitModal, #otpModal, #debitModal, #addBonusModal, #debitProfitModal, #removeBonusModal {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
-  }
+  /* hide all modals by default (added creditModal) */
+#profitModal, #otpModal, #debitModal, #addBonusModal, #debitProfitModal, #removeBonusModal, #creditModal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
     .card-box {
       background-color: #fff;
       border-radius: 12px;
@@ -165,6 +167,10 @@
         {{-- <button class="btn-danger" onclick="openDebitModal()">Debit Balance</button> --}}
         <button class="btn-green" onclick="openAddBonusModal()">Add Bonus</button>
         <button class="btn-danger" onclick="openRemoveBonusModal()">Debit Bonus</button>
+        <!-- Credit & Debit Balance -->
+      <button class="btn-green" onclick="openCreditModal()">Credit Balance</button>
+      <button class="btn-danger" onclick="openDebitModal()">Debit Balance</button>
+
         <!-- NEW: Login as User Button -->
       <form method="POST" action="{{ route('admin.users.impersonate', $user->id) }}" class="d-inline impersonate-form">
           @csrf
@@ -386,6 +392,19 @@
         </div>
       </div>
     </div>
+
+    <!-- CREDIT BALANCE MODAL -->
+<div id="creditModal">
+  <div class="modal-box">
+    <h5>Credit Account</h5>
+    <input type="number" id="creditAmount" class="form-control" placeholder="Enter amount to credit">
+    <div class="mt-3 d-flex justify-content-end gap-2">
+      <button class="btn btn-secondary" onclick="closeCreditModal()">Cancel</button>
+      <button class="btn btn-success" onclick="submitCredit({{ $user->id }})">Credit</button>
+    </div>
+  </div>
+</div>
+
   </div>
 
   <!-- ADD BONUS MODAL -->
@@ -430,64 +449,157 @@
   
 
     function openProfitModal() {
-      document.getElementById('profitModal').style.display = 'flex';
+    document.getElementById('profitModal').style.display = 'flex';
+  }
+  function closeProfitModal() {
+    document.getElementById('profitModal').style.display = 'none';
+    document.getElementById('profitAmount').value = '';
+  }
+
+  function openDebitProfitModal() {
+    document.getElementById('debitProfitModal').style.display = 'flex';
+  }
+  function closeDebitProfitModal() {
+    document.getElementById('debitProfitModal').style.display = 'none';
+    document.getElementById('debitProfitAmount').value = '';
+  }
+
+  function openOtpModal() {
+    document.getElementById('otpModal').style.display = 'flex';
+  }
+  function closeOtpModal() {
+    document.getElementById('otpModal').style.display = 'none';
+    document.getElementById('otpInput').value = '';
+  }
+
+  function openDebitModal() {
+    document.getElementById('debitModal').style.display = 'flex';
+  }
+  function closeDebitModal() {
+    document.getElementById('debitModal').style.display = 'none';
+    document.getElementById('debitAmount').value = '';
+  }
+
+  // Bonus modals
+  function openAddBonusModal() {
+    document.getElementById('addBonusModal').style.display = 'flex';
+  }
+  function closeAddBonusModal() {
+    document.getElementById('addBonusModal').style.display = 'none';
+    document.getElementById('addBonusAmount').value = '';
+  }
+
+  function openRemoveBonusModal() {
+    document.getElementById('removeBonusModal').style.display = 'flex';
+  }
+  function closeRemoveBonusModal() {
+    document.getElementById('removeBonusModal').style.display = 'none';
+    document.getElementById('removeBonusAmount').value = '';
+  }
+
+  // ---------- CREDIT MODAL ----------
+  function openCreditModal() {
+    document.getElementById('creditModal').style.display = 'flex';
+  }
+
+  function closeCreditModal() {
+    document.getElementById('creditModal').style.display = 'none';
+    const el = document.getElementById('creditAmount');
+    if (el) el.value = '';
+  }
+
+  // ---------- SUBMIT HANDLERS (fetch) ----------
+  async function submitCredit(userId) {
+    const input = document.getElementById('creditAmount');
+    const amount = input ? parseFloat(input.value) : NaN;
+    if (!amount || amount <= 0) {
+      return toastr.error("Enter a valid amount.");
     }
 
-    function closeProfitModal() {
-      document.getElementById('profitModal').style.display = 'none';
-      document.getElementById('profitAmount').value = '';
+    const btn = document.querySelector('#creditModal .btn-success');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerText = 'Processing...';
     }
 
-    function openDebitProfitModal() {
-      document.getElementById('debitProfitModal').style.display = 'flex';
+    try {
+      const res = await fetch(`/admin/users/${userId}/balance`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+        },
+        body: JSON.stringify({ type: 'add', amount })
+      });
+
+      const data = await res.json().catch(()=>({}));
+
+      if (res.ok && data.success) {
+        toastr.success(data.message || 'Balance credited.');
+        if (data.new_balance !== undefined) {
+          document.getElementById('user-balance').textContent = `$${parseFloat(data.new_balance).toFixed(2)}`;
+        }
+        closeCreditModal();
+      } else {
+        toastr.error(data.message || 'Failed to credit balance.');
+        console.error('credit error response:', res, data);
+      }
+    } catch (err) {
+      console.error('submitCredit error:', err);
+      toastr.error('Something went wrong.');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerText = 'Credit';
+      }
+    }
+  }
+
+  async function submitDebit(userId) {
+    const input = document.getElementById('debitAmount');
+    const amount = input ? parseFloat(input.value) : NaN;
+    if (!amount || amount <= 0) {
+      return toastr.error("Enter a valid debit amount.");
     }
 
-    function closeDebitProfitModal() {
-      document.getElementById('debitProfitModal').style.display = 'none';
-      document.getElementById('debitProfitAmount').value = '';
+    const btn = document.querySelector('#debitModal .btn-danger');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerText = 'Processing...';
     }
 
+    try {
+      const res = await fetch(`/admin/users/${userId}/balance`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+        },
+        body: JSON.stringify({ type: 'debit', amount })
+      });
 
-    function openOtpModal() {
-      document.getElementById('otpModal').style.display = 'flex';
-    }
+      const data = await res.json().catch(()=>({}));
 
-    function closeOtpModal() {
-      document.getElementById('otpModal').style.display = 'none';
-      document.getElementById('otpInput').value = '';
+      if (res.ok && data.success) {
+        toastr.success(data.message || 'Balance debited.');
+        if (data.new_balance !== undefined) {
+          document.getElementById('user-balance').textContent = `$${parseFloat(data.new_balance).toFixed(2)}`;
+        }
+        closeDebitModal();
+      } else {
+        toastr.error(data.message || 'Failed to debit balance.');
+        console.error('debit error response:', res, data);
+      }
+    } catch (err) {
+      console.error('submitDebit error:', err);
+      toastr.error('Something went wrong.');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerText = 'Debit';
+      }
     }
-
-    function openDebitModal() {
-      document.getElementById('debitModal').style.display = 'flex';
-    }
-
-    function closeDebitModal() {
-      document.getElementById('debitModal').style.display = 'none';
-      document.getElementById('debitAmount').value = '';
-    }
-
-    // OPEN / CLOSE Bonus Modals
-    function openAddBonusModal() {
-      document.getElementById('addBonusModal').style.display = 'flex';
-    }
-    function closeAddBonusModal() {
-      document.getElementById('addBonusModal').style.display = 'none';
-      document.getElementById('addBonusAmount').value = '';
-    }
-
-    function openRemoveBonusModal() {
-      document.getElementById('removeBonusModal').style.display = 'flex';
-    }
-    function closeRemoveBonusModal() {
-      document.getElementById('removeBonusModal').style.display = 'none';
-      document.getElementById('removeBonusAmount').value = '';
-    }
-
-    function closeDebitProfitModal() {
-      document.getElementById('debitProfitModal').style.display = 'none';
-      document.getElementById('debitProfitAmount').value = '';
-    }
-
+  }
 
     function submitProfitTopUp(userId) {
       const amount = parseFloat(document.getElementById('profitAmount').value);
@@ -556,38 +668,6 @@
     }
 
 
-    function submitDebit(userId) {
-      const amount = parseFloat(document.getElementById('debitAmount').value);
-      if (!amount || amount <= 0) return toastr.error("Enter a valid debit amount.");
-
-      const btn = document.querySelector('#debitModal .btn-danger');
-      btn.disabled = true;
-      btn.innerText = 'Processing...';
-
-      fetch(`{{ route('admin.debit.balance', ['user' => $user->id]) }}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': '{{ csrf_token() }}',
-        },
-        body: JSON.stringify({ amount })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          toastr.success(data.message);
-          document.getElementById('user-balance').textContent = `$${parseFloat(data.new_balance).toFixed(2)}`;
-          closeDebitModal();
-        } else {
-          toastr.error(data.message);
-        }
-      })
-      .catch(() => toastr.error("Something went wrong."))
-      .finally(() => {
-        btn.disabled = false;
-        btn.innerText = 'Debit';
-      });
-    }
 
     function generateOtp() {
       const otp = Math.floor(100000 + Math.random() * 900000);

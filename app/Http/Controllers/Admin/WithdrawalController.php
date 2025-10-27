@@ -51,6 +51,12 @@ class WithdrawalController extends Controller
                 return response()->json(['success' => false, 'message' => 'Withdrawal already processed.']);
             }
 
+            $user = $withdrawal->user;
+
+            // Reverse the amount
+            $user->balance += $withdrawal->amount;
+            $user->save();
+
             $withdrawal->status = 'declined';
             $withdrawal->save();
 

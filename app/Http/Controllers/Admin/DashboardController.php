@@ -14,6 +14,7 @@ use App\Models\Wallet;
 use App\Models\Withdrawal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class DashboardController extends Controller
@@ -265,4 +266,52 @@ class DashboardController extends Controller
             'new_balance' => $user->balance
         ]);
     }
+
+    public function updateUserBalance(Request $request, User $user)
+    {
+        $request->validate([
+            'type' => 'required|in:add,debit',
+            'amount' => 'required|numeric|min:0.01',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $amount = $request->amount;
+            $type = $request->type;
+
+            if ($type === 'debit') {
+                // Check sufficient balance
+                if ($user->balance < $amount) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'User has insufficient balance.'
+                    ], 400);
+                }
+
+                $user->decrement('balance', $amount);
+                $message = 'User balance debited successfully.';
+            } else {
+                $user->increment('balance', $amount);
+                $message = 'User balance added successfully.';
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'new_balance' => $user->balance,
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update user balance. Please try again later.',
+            ], 500);
+        }
+    }
+
 }

@@ -119,6 +119,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/withdrawals/{id}/decline', [AdminWithdrawalController::class, 'declineWithdrawal'])->name('withdrawals.decline');
         Route::post('/deposits/{id}/decline', [AdminDepositController::class, 'decline'])->name('deposits.decline');
 
+        // Update (add or debit) user balance
+        Route::post('/users/{user}/balance', [AdminDashboardController::class, 'updateUserBalance'])->name('users.update.balance');
+
+
 
 
         //traders

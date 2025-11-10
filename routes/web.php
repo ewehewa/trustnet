@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminNftController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepositController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Admin\InvestmentPlanController;
 use App\Http\Controllers\Admin\TraderController;
 use App\Http\Controllers\CopiedTraderController;
 use App\Http\Controllers\TraderController as ControllersTraderController;
+use App\Http\Controllers\UserNftController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -74,6 +76,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('user/copy-trader', [CopiedTraderController::class, 'store'])->name('copy.trader');
     Route::delete('user/copy-trader/{id}', [CopiedTraderController::class, 'destroy'])->name('uncopy.trader');
     Route::get('user/copied-traders', [CopiedTraderController::class, 'history'])->name('user.copied.traders');
+
+    // NFT
+    Route::post('/nfts/mint', [UserNftController::class, 'mint'])->name('user.nfts.mint');
+    Route::get('/nfts/marketplace', [UserNftController::class, 'marketplace'])->name('nfts.marketplace');
+    Route::get('/nfts/mint', [UserNftController::class, 'showMintForm'])->name('nfts.mint.form');
+    Route::get('/nfts/{id}', [UserNftController::class, 'show'])->name('nfts.show');
+    Route::get('/my-nfts', [UserNftController::class, 'myNfts'])->name('user.nfts.my');
+    Route::post('/nfts/{nft}/buy', [UserNftController::class, 'buy'])->name('nfts.buy')->middleware('auth');
+
+
 });
 
 //Admin Routes
@@ -122,7 +134,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Update (add or debit) user balance
         Route::post('/users/{user}/balance', [AdminDashboardController::class, 'updateUserBalance'])->name('users.update.balance');
 
-
+        // NFTS
+        Route::post('/nfts/mint', [AdminNftController::class, 'mint'])->name('nfts.mint');
+        Route::get('/nfts/create', [AdminNftController::class, 'create'])->name('nfts.create');
+        Route::get('/nfts', [AdminNftController::class, 'index'])->name('nfts.index');
 
 
         //traders

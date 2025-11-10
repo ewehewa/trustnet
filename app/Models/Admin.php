@@ -15,6 +15,11 @@ class Admin extends Authenticatable
         'password'
     ];
 
+    public function nfts()
+    {
+        return $this->morphMany(Nft::class, 'owner');
+    }
+
     protected $hidden = [
         'password', 
         'remember_token'
@@ -24,4 +29,5 @@ class Admin extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
 }

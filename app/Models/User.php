@@ -57,6 +57,12 @@ class User extends Authenticatable
         return $this->hasMany(Bonus::class);
     }
 
+    public function nfts()
+    {
+        return $this->morphMany(Nft::class, 'owner');
+    }
+
+
 
 
     protected $hidden = [

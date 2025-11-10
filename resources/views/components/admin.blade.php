@@ -108,10 +108,10 @@
                 <i class="fas fa-users"></i>
                 <span class="menu-item-text">All Traders</span>
             </a>
-            {{-- <a href="#" class="menu-item">
+            <a href="{{ route('admin.nfts.create') }}" class="menu-item">
                 <i class="fas fa-cogs"></i>
-                <span class="menu-item-text">Settings</span>
-            </a> --}}
+                <span class="menu-item-text">Add NFT</span>
+            </a>
         </nav>
     </aside>
 

@@ -72,6 +72,10 @@ window.smartsupp||(function(d) {
                     <i class="fas fa-user-tie"></i>
                     <span>Copy Trading</span>
                 </a>
+                <a href="{{ route('trade.index') }}" class="sidebar-item">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Trade</span>
+                </a>
                 <a href="{{ route('nfts.marketplace') }}" class="sidebar-item">
                     <i class="fas fa-user-tie"></i>
                     <span>NFTs</span>

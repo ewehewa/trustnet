@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\InvestmentPlanController;
 use App\Http\Controllers\Admin\TraderController;
 use App\Http\Controllers\CopiedTraderController;
+use App\Http\Controllers\TradeController;
 use App\Http\Controllers\TraderController as ControllersTraderController;
 use App\Http\Controllers\UserNftController;
 use Illuminate\Support\Facades\Route;
@@ -85,6 +86,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/my-nfts', [UserNftController::class, 'myNfts'])->name('user.nfts.my');
     Route::post('/nfts/{nft}/buy', [UserNftController::class, 'buy'])->name('nfts.buy')->middleware('auth');
 
+    //TRADE
+    Route::get('/trade', [TradeController::class, 'index'])->name('trade.index');
+    Route::post('/trade/place', [TradeController::class, 'placeTrade'])->name('trade.place');
 
 });
 

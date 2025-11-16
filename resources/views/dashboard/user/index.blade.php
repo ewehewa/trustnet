@@ -9,7 +9,7 @@
     </div>
 
     <!-- Main Dashboard Row -->
-    <div class="row">
+    <div class="row mb-4">
       <!-- Left Side - Portfolio & Charts -->
       <div class="col-lg-6 col-12 mb-4">
         <!-- Portfolio -->
@@ -125,6 +125,7 @@
     </div>
 
     <!-- Trading Section -->
+<!-- Trading Section -->
 <div class="row mb-4">
   <div class="col-12">
     <div class="trading-section card shadow-sm border-0 p-4">
@@ -141,7 +142,9 @@
       <div class="row">
         <!-- Left: Trade Controls -->
         <div class="col-lg-4 mb-4">
-          <form id="tradeForm">
+          <form id="dashboardTradeForm" method="POST" action="{{ route('trade.place') }}" class="w-100">
+            @csrf
+
             <div class="mb-3">
               <label class="form-label">Asset Type</label>
               <select class="form-select" id="assetType">
@@ -165,40 +168,16 @@
             <div class="mb-3">
               <label class="form-label">Leverage</label>
 
-              <!-- Leverage Buttons Row -->
               <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-                <!-- Prefilled Input Styled Like Button -->
-                <input
-                  type="text"
-                  id="selectedLeverage"
-                  class="form-control leverage-display"
-                  value="1x"
-                  readonly
-                >
+                <input type="text" id="selectedLeverage" class="form-control leverage-display" value="1x" readonly>
 
-                <!-- Leverage Buttons -->
                 @foreach([1,5,10,25,50,75,100] as $x)
-                  <button
-                    type="button"
-                    class="btn btn-outline-light leverage-btn"
-                    data-value="{{ $x }}"
-                  >{{ $x }}x</button>
+                  <button type="button" class="btn btn-outline-light leverage-btn" data-value="{{ $x }}">{{ $x }}x</button>
                 @endforeach
               </div>
 
-              <!-- Leverage Slider -->
-              <input
-                type="range"
-                class="form-range leverage-slider"
-                id="leverageRange"
-                min="1"
-                max="100"
-                step="1"
-                value="1"
-              >
+              <input type="range" class="form-range leverage-slider" id="leverageRange" min="1" max="100" step="1" value="1">
             </div>
-
-
 
             <div class="mb-3">
               <label class="form-label">Trade Duration (minutes)</label>
@@ -221,11 +200,21 @@
               </div>
             </div>
 
-            <div class="d-flex gap-3">
-              <button type="button" class="btn btn-success w-50 py-2 fw-bold" id="buyBtn">
+            <!-- Hidden Fields -->
+            <input type="hidden" name="asset_type" id="formAssetType" value="crypto">
+            <input type="hidden" name="asset_name" id="formAssetName" value="BTCUSDT">
+            <input type="hidden" name="trade_type" id="formTradeType" value="buy">
+            <input type="hidden" name="leverage" id="formLeverage" value="1x">
+            <input type="hidden" name="duration" id="formDuration" value="5">
+            <input type="hidden" name="amount" id="formAmount" value="0">
+            <input type="hidden" name="take_profit" id="formTakeProfit" value="1.00">
+            <input type="hidden" name="stop_loss" id="formStopLoss" value="0.00">
+
+            <div class="d-flex gap-3 mt-3">
+              <button type="submit" class="btn btn-success w-50 py-2 fw-bold" id="buyBtn">
                 <i class="fas fa-arrow-up me-1"></i> Buy
               </button>
-              <button type="button" class="btn btn-danger w-50 py-2 fw-bold" id="sellBtn">
+              <button type="submit" class="btn btn-danger w-50 py-2 fw-bold" id="sellBtn">
                 <i class="fas fa-arrow-down me-1"></i> Sell
               </button>
             </div>
@@ -252,16 +241,6 @@
                   container_id: "tradingview_chart"
                 });
               });
-
-              // Leverage button toggle
-              const leverageBtns = document.querySelectorAll(".leverage-btn");
-              leverageBtns.forEach(btn => {
-                btn.addEventListener("click", function() {
-                  leverageBtns.forEach(b => b.classList.remove("active"));
-                  this.classList.add("active");
-                  document.getElementById("selectedLeverage").value = this.dataset.value;
-                });
-              });
             </script>
           </div>
         </div>
@@ -269,9 +248,13 @@
     </div>
   </div>
 </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Market Data Charts Section -->
-<div class="row mb-4">
+<div class="row mb-4 mx-2">
   <!-- Cryptocurrency Chart -->
   <div class="col-lg-6 col-12 mb-4">
     <div class="mb-3">
@@ -330,80 +313,157 @@
 
 </div>
 
+<!-- Modal: Insufficient Balance -->
+  <div class="modal fade" id="balanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark text-white border-0 rounded-3">
+        <div class="modal-header border-0">
+          <h5 class="modal-title text-warning">Insufficient Balance</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>You don’t have enough balance to buy place this trade.</p>
+          <p><strong>Your Balance:</strong> <span id="modalBalanceDisplay"></span> USD</p>
+          <p><strong>Required Balance:</strong> <span id="modalRequiredDisplay"></span> USD</p>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    // ===== Transaction Tabs =====
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const depositTable = document.getElementById('depositTable');
-    const withdrawalTable = document.getElementById('withdrawalTable');
+document.addEventListener('DOMContentLoaded', function () {
 
-    tabButtons.forEach(button => {
-      button.addEventListener('click', function () {
-        tabButtons.forEach(btn => btn.classList.remove('active'));
-        this.classList.add('active');
+  /* ========================= Transaction Tabs ========================= */
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const depositTable = document.getElementById('depositTable');
+  const withdrawalTable = document.getElementById('withdrawalTable');
 
-        if (this.dataset.tab === 'deposit') {
-          depositTable.style.display = '';
-          withdrawalTable.style.display = 'none';
-        } else {
-          depositTable.style.display = 'none';
-          withdrawalTable.style.display = '';
-        }
-      });
+  tabButtons.forEach(button => {
+    button.addEventListener('click', function () {
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      this.classList.add('active');
+
+      if (this.dataset.tab === 'deposit') {
+        depositTable.style.display = '';
+        withdrawalTable.style.display = 'none';
+      } else {
+        depositTable.style.display = 'none';
+        withdrawalTable.style.display = '';
+      }
     });
+  });
 
-    // ===== Leverage Button + Prefill + Slider =====
-    const leverageBtns = document.querySelectorAll('.leverage-btn');
-    const leverageInput = document.getElementById('selectedLeverage');
-    const leverageRange = document.getElementById('leverageRange');
+  /* ========================= Leverage Buttons + Prefill + Slider ========================= */
+  const leverageBtns = document.querySelectorAll('.leverage-btn');
+  const leverageInput = document.getElementById('selectedLeverage');
+  const leverageRange = document.getElementById('leverageRange');
 
-    leverageBtns.forEach(btn => {
-      btn.addEventListener('click', function () {
-        leverageBtns.forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
+  leverageBtns.forEach(btn => {
+    btn.addEventListener('click', function () {
+      leverageBtns.forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
 
-        const value = parseInt(this.dataset.value);
-        leverageInput.value = value + 'x';
-        if (leverageRange) {
-          leverageRange.value = value;
-          updateLeverageSliderColor(leverageRange);
-        }
-      });
-    });
-
-    // Update input and button when slider changes
-    if (leverageRange) {
-      leverageRange.addEventListener('input', function () {
-        const val = parseInt(this.value);
-        leverageInput.value = val + 'x';
-        leverageBtns.forEach(b => b.classList.remove('active'));
-        leverageBtns.forEach(b => {
-          if (parseInt(b.dataset.value) === val) b.classList.add('active');
-        });
-        updateLeverageSliderColor(this);
-      });
-
-      // Initialize slider color
-      updateLeverageSliderColor(leverageRange);
-    }
-
-    // Set default leverage button active
-    if (leverageBtns.length > 0) {
-      leverageBtns[0].classList.add('active');
-      leverageInput.value = leverageBtns[0].dataset.value + 'x';
+      const value = parseInt(this.dataset.value);
+      leverageInput.value = value + 'x';
       if (leverageRange) {
-        leverageRange.value = leverageBtns[0].dataset.value;
+        leverageRange.value = value;
         updateLeverageSliderColor(leverageRange);
       }
-    }
-
-    // ===== Dynamic Slider Fill Color =====
-    function updateLeverageSliderColor(slider) {
-      const val = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
-      slider.style.background = `linear-gradient(to right, #00bcd4 ${val}%, #2a3b4d ${val}%)`;
-    }
+    });
   });
+
+  if (leverageRange) {
+    leverageRange.addEventListener('input', function () {
+      const val = parseInt(this.value);
+      leverageInput.value = val + 'x';
+      leverageBtns.forEach(b => b.classList.remove('active'));
+      leverageBtns.forEach(b => {
+        if (parseInt(b.dataset.value) === val) b.classList.add('active');
+      });
+      updateLeverageSliderColor(this);
+    });
+
+    updateLeverageSliderColor(leverageRange);
+  }
+
+  if (leverageBtns.length > 0) {
+    leverageBtns[0].classList.add('active');
+    leverageInput.value = leverageBtns[0].dataset.value + 'x';
+    if (leverageRange) {
+      leverageRange.value = leverageBtns[0].dataset.value;
+      updateLeverageSliderColor(leverageRange);
+    }
+  }
+
+  function updateLeverageSliderColor(slider) {
+    const val = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+    slider.style.background = `linear-gradient(to right, #00bcd4 ${val}%, #2a3b4d ${val}%)`;
+  }
+
+  /* ========================= Trade Form Logic ========================= */
+  const form = document.getElementById('dashboardTradeForm');
+
+  if (form) {
+    const assetTypeSelect = document.getElementById('assetType');
+    const assetNameSelect = document.getElementById('assetName');
+    const leverageInput = document.getElementById('selectedLeverage');
+    const durationInput = document.getElementById('tradeDuration');
+    const amountInput = document.getElementById('tradeAmount');
+    const takeProfitInput = document.getElementById('takeProfit');
+    const stopLossInput = document.getElementById('stopLoss');
+
+    const formAssetType = document.getElementById('formAssetType');
+    const formAssetName = document.getElementById('formAssetName');
+    const formLeverage = document.getElementById('formLeverage');
+    const formDuration = document.getElementById('formDuration');
+    const formAmount = document.getElementById('formAmount');
+    const formTakeProfit = document.getElementById('formTakeProfit');
+    const formStopLoss = document.getElementById('formStopLoss');
+    const formTradeType = document.getElementById('formTradeType');
+
+    // Modal alert reference
+    const modal = new bootstrap.Modal(document.getElementById('balanceModal'));
+
+    form.addEventListener('submit', function (e) {
+  const amount = parseFloat(amountInput.value);
+  const balance = parseFloat(`{{ $user->balance }}`);
+
+  // Validate balance before submitting
+  if (amount > balance) {
+    e.preventDefault();
+
+    document.getElementById('modalBalanceDisplay').textContent = balance.toFixed(2);
+    document.getElementById('modalRequiredDisplay').textContent = amount.toFixed(2);
+
+    const modal = new bootstrap.Modal(document.getElementById('balanceModal'));
+    modal.show();
+    return;
+  }
+
+  // Prefill hidden inputs before submit
+  formAssetType.value = assetTypeSelect.value;
+  formAssetName.value = assetNameSelect.value;
+  formLeverage.value = leverageInput.value;
+  formDuration.value = durationInput.value;
+  formAmount.value = amountInput.value;
+  formTakeProfit.value = takeProfitInput.value;
+  formStopLoss.value = stopLossInput.value;
+
+  // Determine trade type
+  const clickedButton = document.activeElement;
+  formTradeType.value = clickedButton.id === 'buyBtn' ? 'buy' : 'sell';
+});
+
+  }
+
+});
 </script>
+
 
 <style>
   /* ======== Chart Layout Adjustments ======== */

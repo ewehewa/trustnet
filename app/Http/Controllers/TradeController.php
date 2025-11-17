@@ -20,6 +20,7 @@ class TradeController extends Controller
     }
 
     // Handle Buy/Sell trade
+    // Handle Buy/Sell trade
     public function placeTrade(Request $request)
     {
         $user = Auth::user();
@@ -34,10 +35,14 @@ class TradeController extends Controller
             'stop_loss' => 'nullable|numeric|min:0',
         ]);
 
-        // Check if user has enough balance
+        // Check balance
         if ($request->amount > $user->balance) {
             return back()->withErrors(['amount' => 'Insufficient balance to place this trade']);
         }
+
+        // Deduct amount first
+        $user->balance -= $request->amount;
+        $user->save();
 
         // Create trade record
         $trade = Trade::create([
@@ -50,7 +55,7 @@ class TradeController extends Controller
             'duration' => $request->duration,
             'take_profit' => $request->take_profit ?? 0,
             'stop_loss' => $request->stop_loss ?? 0,
-            'expires_at' => now()->addMinutes($request->duration),
+            'expires_at' => now()->addMinutes((int)$request->duration),
         ]);
 
         // Notify admin
@@ -58,6 +63,9 @@ class TradeController extends Controller
             $message->to('admin@example.com')->subject('New Trade Placed');
         });
 
-        return redirect()->route('trade.index')->with('success', 'Trade placed successfully!');
+        return redirect()
+            ->route('trade.index')
+            ->with('success', 'Trade placed successfully!')
+            ->with('show_history', true);
     }
 }

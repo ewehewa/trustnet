@@ -322,7 +322,7 @@
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <p>You don’t have enough balance to buy place this trade.</p>
+          <p>You don’t have enough balance to place this trade.</p>
           <p><strong>Your Balance:</strong> <span id="modalBalanceDisplay"></span> USD</p>
           <p><strong>Required Balance:</strong> <span id="modalRequiredDisplay"></span> USD</p>
         </div>

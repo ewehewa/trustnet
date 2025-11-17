@@ -99,6 +99,110 @@
   </div>
 </div>
 
+
+<!-- Trade Records Section -->
+<div class="card shadow-sm border-0 p-4 mb-4" style="background:#0e1621; border-radius:20px;">
+    <h4 class="text-white mb-3">Trade History</h4>
+
+    <ul class="nav nav-tabs" id="tradeTabs">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#openTrades">Open Trades</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#closedTrades">Closed Trades</a>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3">
+
+        <!-- Open Trades -->
+        <div class="tab-pane fade show active" id="openTrades">
+            @if($openTrades->count() > 0)
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Asset</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Leverage</th>
+                                <th>Expires</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($openTrades as $trade)
+                                <tr>
+                                    <td>{{ $trade->asset_name }}</td>
+                                    <td>
+                                        <span class="badge {{ $trade->trade_type === 'buy' ? 'bg-success' : 'bg-danger' }}">
+                                            {{ strtoupper($trade->trade_type) }}
+                                        </span>
+                                    </td>
+                                    <td>${{ number_format($trade->amount, 2) }}</td>
+                                    <td>{{ $trade->leverage }}</td>
+                                    <td>{{ $trade->expires_at->diffForHumans() }}</td>
+                                    <td><span class="badge bg-warning">Running</span></td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <p class="text-center text-secondary py-3">No open trades yet.</p>
+            @endif
+        </div>
+
+        <!-- Closed Trades -->
+        <div class="tab-pane fade" id="closedTrades">
+            @if($closedTrades->count() > 0)
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Asset</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Leverage</th>
+                                <th>Result</th>
+                                <th>Closed At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+@foreach($closedTrades as $trade)
+    <tr>
+        <td>{{ $trade->asset_name }}</td>
+        <td>
+            <span class="badge {{ $trade->trade_type === 'buy' ? 'bg-success' : 'bg-danger' }}">
+                {{ strtoupper($trade->trade_type) }}
+            </span>
+        </td>
+        <td>${{ number_format($trade->amount, 2) }}</td>
+        <td>{{ $trade->leverage }}</td>
+        <td>
+            @if($trade->profit_loss !== null)
+                <span class="badge {{ $trade->profit_loss >= 0 ? 'bg-success' : 'bg-danger' }}">
+                    {{ $trade->profit_loss >= 0 ? '+' : '' }}${{ number_format($trade->profit_loss, 2) }}
+                </span>
+            @else
+                <span class="badge bg-secondary">N/A</span>
+            @endif
+        </td>
+        <td>{{ $trade->updated_at->format('M d, Y h:i A') }}</td>
+    </tr>
+@endforeach
+</tbody>
+
+                    </table>
+                </div>
+            @else
+                <p class="text-center text-secondary py-3">No closed trades yet.</p>
+            @endif
+        </div>
+
+    </div>
+</div>
+
 <!-- Modal: Insufficient Balance -->
 <div class="modal fade" id="balanceModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -121,73 +225,100 @@
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  // TradingView chart
-  new TradingView.widget({
-    autosize: true,
-    symbol: "BINANCE:BTCUSDT",
-    interval: "30",
-    timezone: "Etc/UTC",
-    theme: "dark",
-    style: "1",
-    locale: "en",
-    enable_publishing: false,
-    backgroundColor: "#0e1621",
-    container_id: "tradingview_chart"
-  });
+  document.addEventListener('DOMContentLoaded', function () {
+    // TradingView chart
+    new TradingView.widget({
+      autosize: true,
+      symbol: "BINANCE:BTCUSDT",
+      interval: "30",
+      timezone: "Etc/UTC",
+      theme: "dark",
+      style: "1",
+      locale: "en",
+      enable_publishing: false,
+      backgroundColor: "#0e1621",
+      container_id: "tradingview_chart"
+    });
 
-  // Leverage buttons + slider
-  const leverageBtns = document.querySelectorAll('.leverage-btn');
-  const leverageInput = document.getElementById('selectedLeverage');
-  const leverageRange = document.getElementById('leverageRange');
+    // Leverage buttons + slider
+    const leverageBtns = document.querySelectorAll('.leverage-btn');
+    const leverageInput = document.getElementById('selectedLeverage');
+    const leverageRange = document.getElementById('leverageRange');
 
-  leverageBtns.forEach(btn => btn.addEventListener('click', function () {
-    leverageBtns.forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-    const value = parseInt(this.dataset.value);
-    leverageInput.value = value + 'x';
-    leverageRange.value = value;
-    updateLeverageSliderColor(leverageRange);
-  }));
+    leverageBtns.forEach(btn => btn.addEventListener('click', function () {
+      leverageBtns.forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      const value = parseInt(this.dataset.value);
+      leverageInput.value = value + 'x';
+      leverageRange.value = value;
+      updateLeverageSliderColor(leverageRange);
+    }));
 
-  leverageRange.addEventListener('input', function () {
-    const val = parseInt(this.value);
-    leverageInput.value = val + 'x';
-    leverageBtns.forEach(b => b.classList.remove('active'));
-    leverageBtns.forEach(b => { if(parseInt(b.dataset.value) === val) b.classList.add('active'); });
-    updateLeverageSliderColor(this);
-  });
+    leverageRange.addEventListener('input', function () {
+      const val = parseInt(this.value);
+      leverageInput.value = val + 'x';
+      leverageBtns.forEach(b => b.classList.remove('active'));
+      leverageBtns.forEach(b => { if(parseInt(b.dataset.value) === val) b.classList.add('active'); });
+      updateLeverageSliderColor(this);
+    });
 
-  function updateLeverageSliderColor(slider) {
-    const val = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
-    slider.style.background = `linear-gradient(to right, #00bcd4 ${val}%, #2a3b4d ${val}%)`;
-  }
-
-  // Trade form submission
-  const form = document.getElementById('dashboardTradeForm');
-  const modal = new bootstrap.Modal(document.getElementById('balanceModal'));
-  form.addEventListener('submit', function (e) {
-    const amount = parseFloat(document.getElementById('tradeAmount').value);
-    const balance = parseFloat(`{{ $user->balance }}`);
-    if(amount > balance) {
-      e.preventDefault();
-      document.getElementById('modalBalanceDisplay').textContent = balance.toFixed(2);
-      document.getElementById('modalRequiredDisplay').textContent = amount.toFixed(2);
-      modal.show();
-      return;
+    function updateLeverageSliderColor(slider) {
+      const val = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+      slider.style.background = `linear-gradient(to right, #00bcd4 ${val}%, #2a3b4d ${val}%)`;
     }
-    // Prefill hidden fields
-    document.getElementById('formAssetType').value = document.getElementById('assetType').value;
-    document.getElementById('formAssetName').value = document.getElementById('assetName').value;
-    document.getElementById('formLeverage').value = leverageInput.value;
-    document.getElementById('formDuration').value = document.getElementById('tradeDuration').value;
-    document.getElementById('formAmount').value = amount;
-    document.getElementById('formTakeProfit').value = document.getElementById('takeProfit').value;
-    document.getElementById('formStopLoss').value = document.getElementById('stopLoss').value;
-    document.getElementById('formTradeType').value = document.activeElement.id === 'buyBtn' ? 'buy' : 'sell';
+
+    // Trade form submission with success toast
+    const form = document.getElementById('dashboardTradeForm');
+    const modal = new bootstrap.Modal(document.getElementById('balanceModal'));
+
+    form.addEventListener('submit', function (e) {
+      const amount = parseFloat(document.getElementById('tradeAmount').value);
+      const balance = parseFloat(`{{ $user->balance }}`);
+      if(amount > balance) {
+        e.preventDefault();
+        document.getElementById('modalBalanceDisplay').textContent = balance.toFixed(2);
+        document.getElementById('modalRequiredDisplay').textContent = amount.toFixed(2);
+        modal.show();
+        return;
+      }
+
+      // Prefill hidden fields
+      document.getElementById('formAssetType').value = document.getElementById('assetType').value;
+      document.getElementById('formAssetName').value = document.getElementById('assetName').value;
+      document.getElementById('formLeverage').value = leverageInput.value;
+      document.getElementById('formDuration').value = document.getElementById('tradeDuration').value;
+      document.getElementById('formAmount').value = amount;
+      document.getElementById('formTakeProfit').value = document.getElementById('takeProfit').value;
+      document.getElementById('formStopLoss').value = document.getElementById('stopLoss').value;
+      document.getElementById('formTradeType').value = document.activeElement.id === 'buyBtn' ? 'buy' : 'sell';
+
+      // After submission, show success toast and switch to closed trades tab
+      const toastDiv = document.createElement('div');
+      toastDiv.className = 'toast align-items-center text-white bg-success border-0 position-fixed bottom-0 end-0 m-3';
+      toastDiv.role = 'alert';
+      toastDiv.ariaLive = 'assertive';
+      toastDiv.ariaAtomic = 'true';
+      toastDiv.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">
+            Trade successfully placed!
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      `;
+      document.body.appendChild(toastDiv);
+      const toast = new bootstrap.Toast(toastDiv, { delay: 3000 });
+      toast.show();
+
+      // Switch to "Closed Trades" tab
+      const closedTab = document.querySelector('#tradeTabs a[href="#closedTrades"]');
+      if(closedTab) bootstrap.Tab.getOrCreateInstance(closedTab).show();
+
+      // Allow form to submit normally after showing toast
+    });
   });
-});
 </script>
+
 
 <style>
 /* Trading Section Styles */

@@ -9,19 +9,38 @@ class NewsController extends Controller
 {
     public function index(Request $request)
     {
-        $category = $request->get('category', 'all'); // all, finance, forex, stock, crypto
-        $apiKey = config('services.fmp.key');
+        // Get selected category from query, default is 'all'
+        $category = $request->query('category', 'all');
 
-        $endpoint = match($category) {
-            'finance' => "https://financialmodelingprep.com/api/v3/stock_news?limit=50&apikey={$apiKey}",
-            'forex' => "https://financialmodelingprep.com/api/v3/forex_news?limit=50&apikey={$apiKey}",
-            'crypto' => "https://financialmodelingprep.com/api/v3/cryptocurrency_news?limit=50&apikey={$apiKey}",
-            default => "https://financialmodelingprep.com/api/v3/stock_news?limit=50&apikey={$apiKey}",
-        };
+        // FMP News API endpoint
+        $endpoint = 'https://financialmodelingprep.com/api/v3/stock_news';
+        $limit = 20; // number of articles to fetch
 
-        $response = Http::get($endpoint);
-        $news = $response->json();
+        // Fetch news from FMP
+        $response = Http::get($endpoint, [
+            'limit' => $limit,
+            'apikey' => env('FMP_API_KEY'),
+        ]);
 
-        return view('dashboard.user.news', compact('news', 'category'));
+        $newsData = [];
+
+        if ($response->successful()) {
+            $newsData = $response->json(); // FMP returns an array of news
+        }
+
+        // Optional: filter news by category
+        if ($category != 'all') {
+            $newsData = array_filter($newsData, function ($item) use ($category) {
+                $text = strtolower($item['text'] ?? '');
+                $site = strtolower($item['site'] ?? '');
+                return str_contains($text, $category) || str_contains($site, $category);
+            });
+        }
+
+        // Pass data to Blade view
+        return view('dashboard.user.news', [
+            'news' => $newsData,
+            'category' => $category,
+        ]);
     }
 }

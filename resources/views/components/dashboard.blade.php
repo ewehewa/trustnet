@@ -50,7 +50,7 @@ window.smartsupp||(function(d) {
                 </a>
                 <a href="{{ route('show.investment') }}" class="sidebar-item">
                     <i class="fas fa-chart-pie"></i>
-                    <span>Investments</span>
+                    <span>My Subscriptions</span>
                 </a>
                 <a href="{{ route('show.deposit') }}" class="sidebar-item">
                     <i class="fas fa-plus-circle"></i>
@@ -58,7 +58,7 @@ window.smartsupp||(function(d) {
                 </a>
                 <a href="{{ route('show.plans') }}" class="sidebar-item">
                     <i class="fas fa-hand-holding-usd"></i>
-                    <span>Invest</span>
+                    <span>Subscribe</span>
                 </a>
                 <a href="{{ route('show.withdraw') }}" class="sidebar-item">
                     <i class="fas fa-minus-circle"></i>
@@ -87,7 +87,7 @@ window.smartsupp||(function(d) {
             </div>
             
             <div class="sidebar-section">
-                <div class="sidebar-section-title">Account</div>
+                <div class="sidebar-section-title">Account Settings</div>
                 <a href="{{ route('show.profile') }}" class="sidebar-item">
                     <i class="fas fa-user-circle"></i>
                     <span>My Profile</span>

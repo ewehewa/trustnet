@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\InvestmentPlanController;
 use App\Http\Controllers\Admin\TraderController;
 use App\Http\Controllers\CopiedTraderController;
+use App\Http\Controllers\NewsController;
 use App\Http\Controllers\TradeController;
 use App\Http\Controllers\TraderController as ControllersTraderController;
 use App\Http\Controllers\UserNftController;
@@ -90,6 +91,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/trade', [TradeController::class, 'index'])->name('trade.index');
     Route::post('/trade/place', [TradeController::class, 'placeTrade'])->name('trade.place');
 
+    //NEWS
+    Route::get('/user/news', [NewsController::class, 'index'])->name('dashboard.news');
 });
 
 //Admin Routes
@@ -142,7 +145,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/nfts/mint', [AdminNftController::class, 'mint'])->name('nfts.mint');
         Route::get('/nfts/create', [AdminNftController::class, 'create'])->name('nfts.create');
         Route::get('/nfts', [AdminNftController::class, 'index'])->name('nfts.index');
-
+        Route::delete('/nfts/{nft}/delete', [AdminNftController::class, 'delete'])->name('nfts.delete');
+        Route::get('/nfts/{nft}/edit', [AdminNftController::class, 'edit'])->name('nfts.edit');
+        Route::post('/nfts/{nft}/update', [AdminNftController::class, 'update'])->name('nfts.update');
 
         //traders
         Route::get('/traders/create', [TraderController::class, 'showTradersForm'])->name('traders.create');

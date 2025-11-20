@@ -40,4 +40,8 @@ return [
         'api_key'    => env('CLOUDINARY_API_KEY'),
         'api_secret' => env('CLOUDINARY_API_SECRET'),
     ],
+
+    'fmp' => [
+        'key' => env('FMP_API_KEY'),
+    ],
 ];

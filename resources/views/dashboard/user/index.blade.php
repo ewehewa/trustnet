@@ -313,6 +313,17 @@
 
 </div>
 
+<!-- ===== Top-Right Toast ===== -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index:1055">
+  <div id="tradeSuccessToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">Trade successfully placed!</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+
 <!-- Modal: Insufficient Balance -->
   <div class="modal fade" id="balanceModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -332,7 +343,6 @@
       </div>
     </div>
   </div>
-
 
 
 <script>
@@ -426,43 +436,43 @@ document.addEventListener('DOMContentLoaded', function () {
     const formStopLoss = document.getElementById('formStopLoss');
     const formTradeType = document.getElementById('formTradeType');
 
-    // Modal alert reference
+    // Modal & Toast references
     const modal = new bootstrap.Modal(document.getElementById('balanceModal'));
+    const toast = new bootstrap.Toast(document.getElementById('tradeSuccessToast'), { delay: 3000 });
 
     form.addEventListener('submit', function (e) {
-  const amount = parseFloat(amountInput.value);
-  const balance = parseFloat(`{{ $user->balance }}`);
+      const amount = parseFloat(amountInput.value);
+      const balance = parseFloat(`{{ $user->balance }}`);
 
-  // Validate balance before submitting
-  if (amount > balance) {
-    e.preventDefault();
+      // Validate balance
+      if (amount > balance) {
+        e.preventDefault();
+        document.getElementById('modalBalanceDisplay').textContent = balance.toFixed(2);
+        document.getElementById('modalRequiredDisplay').textContent = amount.toFixed(2);
+        modal.show();
+        return;
+      }
 
-    document.getElementById('modalBalanceDisplay').textContent = balance.toFixed(2);
-    document.getElementById('modalRequiredDisplay').textContent = amount.toFixed(2);
+      // Show trade success toast
+      toast.show();
 
-    const modal = new bootstrap.Modal(document.getElementById('balanceModal'));
-    modal.show();
-    return;
+      // Prefill hidden inputs
+      formAssetType.value = assetTypeSelect.value;
+      formAssetName.value = assetNameSelect.value;
+      formLeverage.value = leverageInput.value;
+      formDuration.value = durationInput.value;
+      formAmount.value = amountInput.value;
+      formTakeProfit.value = takeProfitInput.value;
+      formStopLoss.value = stopLossInput.value;
+
+      // Determine trade type
+      const clickedButton = document.activeElement;
+      formTradeType.value = clickedButton.id === 'buyBtn' ? 'buy' : 'sell';
+    });
   }
-
-  // Prefill hidden inputs before submit
-  formAssetType.value = assetTypeSelect.value;
-  formAssetName.value = assetNameSelect.value;
-  formLeverage.value = leverageInput.value;
-  formDuration.value = durationInput.value;
-  formAmount.value = amountInput.value;
-  formTakeProfit.value = takeProfitInput.value;
-  formStopLoss.value = stopLossInput.value;
-
-  // Determine trade type
-  const clickedButton = document.activeElement;
-  formTradeType.value = clickedButton.id === 'buyBtn' ? 'buy' : 'sell';
-});
-
-  }
-
 });
 </script>
+
 
 
 <style>

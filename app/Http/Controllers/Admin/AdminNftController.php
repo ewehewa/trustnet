@@ -89,12 +89,113 @@ class AdminNftController extends Controller
     public function index()
     {
         // Get all NFTs created by admins (or all NFTs)
-        $nfts = \App\Models\Nft::where('owner_type', 'App\Models\Admin')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $nfts = \App\Models\Nft::orderBy('created_at', 'desc')->get();
+
 
         return view('dashboard.admin.nfts_index', compact('nfts'));
     }
 
+    public function update(Request $request, Nft $nft, CloudinaryService $cloudinaryService)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'price' => 'required|numeric|min:0',
+                'category' => 'required|string|in:art,collectibles,music,photography',
+                'image_file' => 'nullable|file|mimes:jpeg,jpg,png,gif|max:5120', // optional image update
+            ]);
 
+            $admin = Auth::guard('admin')->user();
+
+            if (!$admin) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 401);
+            }
+
+            DB::beginTransaction();
+
+            // Check if admin uploaded a new image
+            if ($request->hasFile('image_file')) {
+                $file = $request->file('image_file');
+
+                $uploadedFileUrl = $cloudinaryService->uploadFile($file->getRealPath());
+
+                if (!$uploadedFileUrl) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Failed to upload new image to Cloudinary.'
+                    ], 500);
+                }
+
+                $nft->image_url = $uploadedFileUrl;
+            }
+
+            // Update other fields
+            $nft->update([
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'price' => $validated['price'],
+                'category' => $validated['category'],
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'NFT updated successfully.',
+                'data' => $nft
+            ], 200);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+
+    public function delete(Nft $nft)
+    {
+        try {
+            $admin = Auth::guard('admin')->user();
+
+            if (!$admin) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized',
+                ], 401);
+            }
+
+            $nft->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'NFT deleted successfully!',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function edit(Nft $nft)
+    {
+        return view('dashboard.admin.edit_nft', compact('nft'));
+    }
 }

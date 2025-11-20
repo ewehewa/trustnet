@@ -80,6 +80,11 @@ window.smartsupp||(function(d) {
                     <i class="fas fa-cube"></i>
                     <span>NFTs</span>
                 </a>
+                 <a href="{{ route('dashboard.news') }}" class="sidebar-item">
+                    <i class="fas fa-newspaper"></i>
+                    <span>News</span>
+                </a>
+
                 {{-- <a href="#" class="sidebar-item">
                     <i class="fas fa-users"></i>
                     <span>Referral</span>

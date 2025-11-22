@@ -72,6 +72,10 @@ window.smartsupp||(function(d) {
                     <i class="fas fa-user-tie"></i>
                     <span>Copy Trading</span>
                 </a>
+                <a href="{{ route('user.signals.index') }}" class="sidebar-item">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Signals</span>
+                </a>
                 <a href="{{ route('trade.index') }}" class="sidebar-item">
                     <i class="fas fa-exchange-alt"></i>
                     <span>Trade</span>

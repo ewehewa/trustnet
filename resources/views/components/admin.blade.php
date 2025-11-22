@@ -112,6 +112,10 @@
                 <i class="fas fa-cogs"></i>
                 <span class="menu-item-text">Add NFT</span>
             </a>
+            <a href="{{ route('admin.signals.create') }}" class="menu-item">
+                <i class="fas fa-cogs"></i>
+                <span class="menu-item-text">Add Signals</span>
+            </a>
         </nav>
     </aside>
 

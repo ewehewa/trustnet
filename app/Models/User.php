@@ -67,6 +67,12 @@ class User extends Authenticatable
         return $this->hasMany(Trade::class);
     }
 
+    public function signalSubscriptions()
+    {
+        return $this->hasMany(UserSignal::class);
+    }
+
+
 
 
 

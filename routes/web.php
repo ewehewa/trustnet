@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminNftController;
+use App\Http\Controllers\Admin\AdminSignalController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepositController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\NewsController;
 use App\Http\Controllers\TradeController;
 use App\Http\Controllers\TraderController as ControllersTraderController;
 use App\Http\Controllers\UserNftController;
+use App\Http\Controllers\UserSignalController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -92,7 +94,21 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/trade/place', [TradeController::class, 'placeTrade'])->name('trade.place');
 
     //NEWS
-    Route::get('/user/news', [NewsController::class, 'index'])->name('dashboard.news');
+    Route::get('/user/news/{category?}', [NewsController::class, 'index'])->name('dashboard.news');
+
+    // Show all available signals
+    Route::get('/dashboard/subscribe-signals', [UserSignalController::class, 'index'])
+        ->name('user.signals.index');
+
+    // Subscribe to a signal
+    Route::post('/dashboard/subscribe-signal/{signal}', [UserSignalController::class, 'subscribe'])
+        ->name('user.signals.subscribe');
+
+    // My Signal Plans
+    Route::get('/dashboard/my-signal-plans', [UserSignalController::class, 'myPlans'])
+        ->name('user.signals.myPlans');
+
+
 });
 
 //Admin Routes
@@ -160,6 +176,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::post('/users/{user}/bonus', [BonusController::class, 'store']);
         Route::delete('/users/{user}/bonus', [BonusController::class, 'destroy']);
+
+        // SIGNALS (Admin)
+        Route::get('/signals', [AdminSignalController::class, 'index'])->name('signals.index');
+        Route::get('/signals/create', [AdminSignalController::class, 'create'])->name('signals.create');
+        Route::post('/signals/store', [AdminSignalController::class, 'store'])->name('signals.store');
+        Route::get('/signals/{signal}/edit', [AdminSignalController::class, 'edit'])->name('signals.edit');
+        Route::post('/signals/{signal}/update', [AdminSignalController::class, 'update'])->name('signals.update');
+        Route::delete('/signals/{signal}/delete', [AdminSignalController::class, 'delete'])->name('signals.delete');
+
     });
 });
 

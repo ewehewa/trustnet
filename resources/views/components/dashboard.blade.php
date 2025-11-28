@@ -88,18 +88,9 @@ window.smartsupp||(function(d) {
                     <i class="fas fa-newspaper"></i>
                     <span>News</span>
                 </a>
-
-                {{-- <a href="#" class="sidebar-item">
-                    <i class="fas fa-users"></i>
-                    <span>Referral</span>
-                </a> --}}
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Account Settings</div>
                 <a href="{{ route('show.profile') }}" class="sidebar-item">
                     <i class="fas fa-user-circle"></i>
-                    <span>My Profile</span>
+                    <span>Account Settings</span>
                 </a>
                 <a href="#" class="sidebar-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <i class="fas fa-sign-out-alt"></i>
@@ -108,6 +99,33 @@ window.smartsupp||(function(d) {
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                     @csrf
                 </form>
+                <!-- Live Analysis Menu Group -->
+                <div class="sidebar-dropdown">
+                    <a class="sidebar-item sidebar-dropdown-toggle">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Live Analysis</span>
+                        <i class="fas fa-chevron-down dropdown-arrow"></i>
+                    </a>
+
+                    <div class="sidebar-submenu">
+                        <a href="{{ route('dashboard.technical') }}" class="sidebar-subitem">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Technical Analysis</span>
+                        </a>
+
+                        <a href="{{ route('dashboard.livecharts') }}" class="sidebar-subitem">
+                            <i class="fas fa-chart-area"></i>
+                            <span>Live Market Chart</span>
+                        </a>
+
+                        <a href="{{ route('dashboard.calendar') }}" class="sidebar-subitem">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Market Calendar</span>
+                        </a>
+                    </div>
+                </div>
+
+                
             </div>
         </div>
     </aside>

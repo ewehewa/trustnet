@@ -106,6 +106,58 @@
               </div>
             </div>
           </div>
+                    <!-- Total Trades -->
+          <div class="col-6 mb-3">
+              <div class="stat-card">
+                  <div class="stat-content">
+                      <div class="stat-label">TOTAL TRADES</div>
+                      <div class="stat-value">{{ $totalTrades }}</div>
+                  </div>
+                  <div class="stat-icon bg-dark">
+                      <i class="fas fa-chart-line"></i>
+                  </div>
+              </div>
+          </div>
+
+          <!-- Open Trades -->
+          <div class="col-6 mb-3">
+              <div class="stat-card">
+                  <div class="stat-content">
+                      <div class="stat-label">OPEN TRADES</div>
+                      <div class="stat-value">{{ $openTrades }}</div>
+                  </div>
+                  <div class="stat-icon bg-info">
+                      <i class="fas fa-hourglass-half"></i>
+                  </div>
+              </div>
+          </div>
+
+          <!-- Closed Trades -->
+          <div class="col-6 mb-3">
+              <div class="stat-card">
+                  <div class="stat-content">
+                      <div class="stat-label">CLOSED TRADES</div>
+                      <div class="stat-value">{{ $closedTrades }}</div>
+                  </div>
+                  <div class="stat-icon bg-secondary">
+                      <i class="fas fa-lock"></i>
+                  </div>
+              </div>
+          </div>
+
+          <!-- Win/Loss Ratio -->
+          <div class="col-6 mb-3">
+              <div class="stat-card">
+                  <div class="stat-content">
+                      <div class="stat-label">WIN / LOSS RATIO</div>
+                      <div class="stat-value">{{ $winLossRatio }}</div>
+                  </div>
+                  <div class="stat-icon bg-success">
+                      <i class="fas fa-trophy"></i>
+                  </div>
+              </div>
+          </div>
+
         </div>
 
         <!-- Auto Trading Section -->

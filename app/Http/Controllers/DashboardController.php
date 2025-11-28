@@ -12,10 +12,37 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
+
         $totalBonus = $user->bonuses()->sum('amount');
 
-        return view('dashboard.user.index', compact('user', 'totalBonus'));
+        //Trade Stats
+        $totalTrades = $user->trades()->count();
+
+        $openTrades = $user->trades()->where('status', 'open')->count();
+
+        $closedTrades = $user->trades()->where('status', 'closed')->count();
+
+        // Wins / Losses based on profit_loss
+        $wins = $user->trades()->where('profit_loss', '>', 0)->count();
+        $losses = $user->trades()->where('profit_loss', '<', 0)->count();
+
+        // Win/Loss Ratio
+        $winLossRatio = ($wins + $losses) === 0 
+            ? '0' 
+            : round(($wins / ($wins + $losses)) * 100, 2);
+
+        return view('dashboard.user.index', compact(
+            'user',
+            'totalBonus',
+            'totalTrades',
+            'openTrades',
+            'closedTrades',
+            'wins',
+            'losses',
+            'winLossRatio'
+        ));
     }
+
 
     public function showProfile()
     {
@@ -80,5 +107,31 @@ class DashboardController extends Controller
                 'message' => 'Something went wrong. Please try again later.'
             ], 500);
         }
+    }
+
+    /* ===========================================
+     | LIVE ANALYSIS PAGES (3 PAGES ONLY)
+     =========================================== */
+
+    // Page 1: Technical Analysis Charts
+    public function technicalAnalysis()
+    {
+        $user = Auth::user();
+
+        return view('dashboard.user.technical', compact('user'));
+    }
+
+    // Page 2: Live Market Charts
+    public function liveMarketCharts()
+    {
+        $user = Auth::user();
+        return view('dashboard.user.livecharts', compact('user'));
+    }
+
+    // Page 3: Economic Calendar
+    public function marketCalendar()
+    {
+        $user = Auth::user();
+        return view('dashboard.user.market_calendar', compact('user'));
     }
 }

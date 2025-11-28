@@ -1395,8 +1395,120 @@ body {
   color: #f59e0b;
 }
 
-    /* .payment-icon {
-        font-size: 24px;
-        color: #007bff;
-    } */
+
+
+
+
+/* Live Analysis / sidebar dropdown styling */
+.sidebar-dropdown {
+  display: block;
+  width: 100%;
+}
+
+/* The visible top-level toggle (Logout, Live Analysis, etc.) */
+.sidebar-dropdown .sidebar-item,
+.sidebar-dropdown .sidebar-dropdown-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  color: #cbd5e1; /* soft text */
+  text-decoration: none;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Icon area on the left for the top item */
+.sidebar-dropdown .sidebar-dropdown-toggle i.fas {
+  margin-right: 10px;
+  width: 20px;
+  text-align: center;
+}
+
+/* The chevron on the right */
+.sidebar-dropdown .dropdown-arrow {
+  transition: transform .25s ease;
+  color: #9ca3af;
+}
+
+/* Submenu hidden by default */
+.sidebar-dropdown .sidebar-submenu {
+  display: none;
+  flex-direction: column;
+  padding-left: 6px;         /* slight indent */
+  margin-top: 6px;
+  gap: 4px;
+}
+
+/* Show submenu when parent is open */
+.sidebar-dropdown.open .sidebar-submenu {
+  display: flex;
+}
+
+/* Individual submenu items */
+.sidebar-dropdown .sidebar-subitem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  padding-left: 36px;        /* deeper indent for nested look */
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 13.5px;
+  border-radius: 6px;
+}
+
+/* Hover/focus styles */
+.sidebar-dropdown .sidebar-subitem:hover,
+.sidebar-dropdown .sidebar-dropdown-toggle:hover {
+  background: rgba(255,255,255,0.03);
+  color: #ffffff;
+}
+
+/* Active/selected state */
+.sidebar-dropdown .sidebar-subitem.active,
+.sidebar-dropdown .sidebar-dropdown-toggle.active {
+  background: rgba(255,255,255,0.04);
+  color: #fff;
+}
+
+/* Small icon for subitems (if you use <i> tags) */
+.sidebar-dropdown .sidebar-subitem i {
+  width: 20px;
+  text-align: center;
+  color: #f8fafc;
+  opacity: 0.9;
+}
+
+/* Rotate chevron when open */
+.sidebar-dropdown.open .dropdown-arrow {
+  transform: rotate(-180deg);
+  color: #fff;
+}
+
+/* Mobile tweaks — keep submenu readable on small screens */
+@media (max-width: 767.98px) {
+  .sidebar-dropdown .sidebar-subitem {
+    padding-left: 28px;
+    font-size: 14px;
+  }
+}
+
+/* Fix spacing for dropdown items like Live Analysis */
+.sidebar-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;  /* Controls space between icon and text */
+}
+
+.sidebar-dropdown-toggle i:first-child {
+    margin-right: 8px; /* Icon spacing */
+}
+
+.sidebar-dropdown-toggle .dropdown-arrow {
+    margin-left: auto; /* Keeps chevron on the far right */
+}
+
 

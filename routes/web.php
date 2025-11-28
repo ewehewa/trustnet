@@ -96,6 +96,12 @@ Route::middleware(['auth'])->group(function () {
     //NEWS
     Route::get('/user/news/{category?}', [NewsController::class, 'index'])->name('dashboard.news');
 
+    // Live charts
+    Route::get('/dashboard/technical', [DashboardController::class, 'technicalAnalysis'])->name('dashboard.technical');
+    Route::get('/dashboard/livecharts', [DashboardController::class, 'liveMarketCharts'])->name('dashboard.livecharts');
+    Route::get('/dashboard/calendar', [DashboardController::class, 'marketCalendar'])->name('dashboard.calendar');
+
+
     // Show all available signals
     Route::get('/dashboard/subscribe-signals', [UserSignalController::class, 'index'])
         ->name('user.signals.index');

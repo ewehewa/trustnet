@@ -147,6 +147,55 @@ window.smartsupp||(function(d) {
     margin-left: auto; /* Keeps chevron on the far right */
 }
 
+/* Buttons in header */
+.header-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    font-size: 0.8rem;  /* mobile-friendly */
+    padding: 4px 8px;
+}
+
+/* Profile button */
+.profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    padding: 4px 8px;
+}
+
+/* Profile avatar */
+.profile-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: #6366f1;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+/* Prevent wrapping */
+.profile-name {
+    white-space: nowrap;
+}
+
+/* Desktop adjustments */
+@media (min-width: 768px) {
+    .header-btn, .profile-btn {
+        font-size: 0.85rem;
+        padding: 5px 10px;
+    }
+}
+
+
+
+
+
     </style>
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
@@ -271,36 +320,51 @@ window.smartsupp||(function(d) {
                         <!--</div>-->
                     </div>
                 </div>
-                <div class="col-6 text-end">
-                    <!-- Profile Dropdown - Now visible on mobile too -->
-                    <div class="profile-dropdown">
-                        <button class="profile-btn" id="profileToggle">
-                            <div class="profile-avatar">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <span class="profile-name">{{ auth()->user()->username }}</span>
-                            <i class="fas fa-chevron-down profile-arrow"></i>
-                        </button>
-                        
-                        <!-- Dropdown Menu -->
-                        <div class="profile-menu" id="profileMenu">
-                            <div class="profile-menu-item">
-                                <a href="{{ route('show.profile') }}" class="text-decoration-none text-white">
-                                    <i class="fas fa-user-circle"></i>
-                                    <span class="px-2">My Profile</span>
-                                </a>
-                            </div>
-                            <div class="profile-menu-divider"></div>
-                            <div class="profile-menu-item" onclick="document.getElementById('logout-form-profile').submit()">
-                                <i class="fas fa-sign-out-alt"></i>
-                                <span>Logout</span>
-                            </div>
-                            <form id="logout-form-profile" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                    @csrf
-                            </form>
-                        </div>
-                    </div>
-                </div>
+
+                <div class="col-6 text-end d-flex justify-content-end align-items-center gap-2 flex-wrap flex-md-nowrap">
+    <!-- Deposit Button -->
+    <a href="{{ route('show.deposit') }}" class="btn btn-success btn-sm header-btn">
+        <i class="fas fa-plus-circle me-1"></i> Deposit
+    </a>
+
+    <!-- Mail Us Button -->
+    <a href="mailto:support@example.com" class="btn btn-info btn-sm header-btn">
+        <i class="fas fa-envelope me-1"></i> Mail Us
+    </a>
+
+    <!-- Profile Dropdown -->
+    <div class="profile-dropdown d-flex align-items-center ms-2">
+        <button class="profile-btn d-flex align-items-center gap-1" id="profileToggle">
+            <span class="profile-avatar">
+                <i class="fas fa-user"></i>
+            </span>
+            <span class="profile-name">{{ auth()->user()->username }}</span>
+            <i class="fas fa-chevron-down profile-arrow"></i>
+        </button>
+
+        <div class="profile-menu" id="profileMenu">
+            <div class="profile-menu-item">
+                <a href="{{ route('show.profile') }}" class="text-decoration-none text-white">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="px-2">My Profile</span>
+                </a>
+            </div>
+            <div class="profile-menu-divider"></div>
+            <div class="profile-menu-item" onclick="document.getElementById('logout-form-profile').submit()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </div>
+            <form id="logout-form-profile" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+
             </div>
         </div>
     </header>

@@ -147,48 +147,55 @@ window.smartsupp||(function(d) {
     margin-left: auto; /* Keeps chevron on the far right */
 }
 
-/* Buttons in header */
-.header-btn {
+/* Make header items fit on mobile */
+.top-header .header-btn {
+    font-size: 0.7rem !important;
+    padding: 3px 6px !important;
     display: flex;
     align-items: center;
     gap: 4px;
     white-space: nowrap;
-    font-size: 0.8rem;  /* mobile-friendly */
-    padding: 4px 8px;
 }
 
-/* Profile button */
 .profile-btn {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.8rem;
-    padding: 4px 8px;
-}
-
-/* Profile avatar */
-.profile-avatar {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    background: #6366f1;
-    border-radius: 50%;
-    color: #fff;
-    font-size: 0.9rem;
-}
-
-/* Prevent wrapping */
-.profile-name {
+    font-size: 0.75rem !important;
+    padding: 3px 6px !important;
     white-space: nowrap;
 }
 
-/* Desktop adjustments */
-@media (min-width: 768px) {
-    .header-btn, .profile-btn {
-        font-size: 0.85rem;
-        padding: 5px 10px;
+.profile-avatar {
+    width: 25px !important;
+    height: 25px !important;
+    font-size: 0.8rem !important;
+}
+
+/* Prevent breaking on mobile */
+.top-header .d-flex {
+    flex-wrap: nowrap !important;
+}
+
+/* Shrink Entire Right Side on Small Screens */
+@media (max-width: 480px) {
+    .top-header .header-btn {
+        font-size: 0.65rem !important;
+        padding: 2px 4px !important;
+    }
+
+    .profile-name {
+        display: none; /* hide long username on very small screens */
+    }
+
+    .profile-btn {
+        padding: 2px 4px !important;
+    }
+
+    .profile-avatar {
+        width: 22px !important;
+        height: 22px !important;
+    }
+
+    .top-header .col-6.text-end {
+        gap: 4px !important;
     }
 }
 

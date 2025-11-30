@@ -1,4 +1,5 @@
 <x-admin>
+
   <style>
     .trader-wrapper {
       display: flex;
@@ -35,7 +36,6 @@
     }
 
     .trader-card {
-      position: relative;
       background-color: #ffffff;
       border-radius: 16px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
@@ -56,13 +56,15 @@
       margin-bottom: 12px;
       display: flex;
       align-items: center;
+      gap: 10px;
     }
 
     .trader-title img {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      margin-right: 10px;
+      object-fit: cover;
+      border: 2px solid #eee;
     }
 
     .trader-detail {
@@ -76,22 +78,26 @@
       font-weight: 600;
     }
 
+    /* UPDATED — same style as NFT action buttons */
     .action-buttons {
-      position: absolute;
-      top: 16px;
-      right: 16px;
       display: flex;
-      gap: 8px;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .edit-btn,
+    .delete-btn {
+      padding: 6px 14px;
+      font-size: 13px;
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      cursor: pointer;
     }
 
     .edit-btn {
       background-color: #1d72b8;
-      color: #fff;
-      padding: 6px 12px;
-      font-size: 13px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
     }
 
     .edit-btn:hover {
@@ -100,12 +106,6 @@
 
     .delete-btn {
       background-color: #e63946;
-      color: #fff;
-      padding: 6px 12px;
-      font-size: 13px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
     }
 
     .delete-btn:hover {
@@ -134,19 +134,6 @@
         @foreach ($traders as $trader)
           <div class="trader-card" id="trader-{{ $trader->id }}">
 
-            <!-- Edit + Delete Buttons -->
-            <div class="action-buttons">
-              <button class="edit-btn" onclick="window.location='{{ route('admin.traders.edit', $trader->id) }}'">
-                Edit
-              </button>
-              <button
-                class="delete-btn"
-                onclick="deleteTrader({{ $trader->id }}, '{{ route('admin.traders.destroy', ['id' => $trader->id]) }}')"
-              >
-                Delete
-              </button>
-            </div>
-
             <div class="trader-title">
               <img src="{{ $trader->picture }}" alt="{{ $trader->name }}">
               {{ $trader->name }}
@@ -157,6 +144,21 @@
             <div class="trader-detail"><strong>Profit Share:</strong> {{ $trader->profit_share }}%</div>
             <div class="trader-detail"><strong>Win Rate:</strong> {{ $trader->win_rate }}%</div>
             <div class="trader-detail"><strong>Total Profit:</strong> ${{ number_format($trader->total_profit, 2) }}</div>
+
+            <!-- NEW NFT-style action buttons -->
+            <div class="action-buttons">
+              <button class="edit-btn" onclick="window.location='{{ route('admin.traders.edit', $trader->id) }}'">
+                Edit
+              </button>
+
+              <button
+                class="delete-btn"
+                onclick="deleteTrader({{ $trader->id }}, '{{ route('admin.traders.destroy', ['id' => $trader->id]) }}')"
+              >
+                Delete
+              </button>
+            </div>
+
           </div>
         @endforeach
       @else

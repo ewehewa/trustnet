@@ -135,6 +135,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/investment-plans', [InvestmentPlanController::class, 'showPlansForm'])->name('plans');
         Route::get('/investment-plans/all', [InvestmentPlanController::class, 'showAllPlans'])->name('show.plans');
         Route::delete('/investment-plans/{id}', [InvestmentPlanController::class, 'deletePlan'])->name('plans.destroy');
+        Route::get('/plans/{id}/edit', [InvestmentPlanController::class, 'editPlan'])->name('plans.edit');
+        Route::post('/plans/{id}/update', [InvestmentPlanController::class, 'updatePlan'])->name('plans.update');
+
 
         Route::post('/deposits/{id}/approve', [AdminDashboardController::class, 'approveDeposit'])->name('deposits.approve');
         Route::get('/deposits', [AdminDashboardController::class, 'allDeposits'])->name('deposits.all');
@@ -176,6 +179,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/traders', [TraderController::class, 'addTrader'])->name('traders.store');
         Route::get('/traders', [TraderController::class, 'fetchTraders'])->name('traders.index');
         Route::delete('/traders/{id}', [TraderController::class, 'deleteTrader'])->name('traders.destroy');
+        Route::get('/admin/trader/{id}/edit', [TraderController::class, 'editTrader'])->name('traders.edit');
+        Route::post('/admin/trader/{id}/update', [TraderController::class, 'updateTrader'])->name('traders.update');
 
         Route::post('/users/{user}/impersonate', [ImpersonationController::class, 'impersonate'])->name('users.impersonate');
         Route::post('/admin/impersonate/leave', [ImpersonationController::class, 'leave'])->name('impersonate.leave');

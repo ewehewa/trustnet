@@ -64,4 +64,51 @@ class InvestmentPlanController extends Controller
             'message' => 'Investment plan deleted successfully.'
         ]);
     }
+
+    /**
+     * Show edit form for a specific investment plan
+     */
+    public function editPlan($id)
+    {
+        $plan = InvestmentPlan::findOrFail($id);
+        return view('dashboard.admin.edit_inv_plans', compact('plan'));
+    }
+
+     /**
+     * Update an existing investment plan
+     */
+    public function updatePlan(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'name'        => 'required|string|max:255',
+                'roi'         => 'required|numeric|min:0',
+                'min_amount'  => 'required|numeric|min:1',
+                'max_amount'  => 'required|numeric|gt:min_amount',
+                'duration'    => 'required|integer|min:1',
+            ]);
+
+            $plan = InvestmentPlan::findOrFail($id);
+            $plan->update($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Investment plan updated successfully.',
+            ]);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors'  => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong while updating the plan.',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
 }

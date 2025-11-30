@@ -100,4 +100,60 @@ class TraderController extends Controller
             ], 500);
         }
     }  
+
+    public function editTrader($id)
+    {
+        $trader = Trader::findOrFail($id);
+        return view('dashboard.admin.edit_trader', compact('trader'));
+    }
+
+    public function updateTrader(Request $request, CloudinaryService $cloudinaryService, $id)
+    {
+        try {
+            $trader = Trader::findOrFail($id);
+
+            $request->validate([
+                'name'           => 'required|string|max:255',
+                'picture'        => 'nullable|file|mimes:jpeg,jpg,png|max:2048',
+                'average_return' => 'required|numeric|min:0',
+                'followers'      => 'nullable|integer|min:0',
+                'profit_share'   => 'required|numeric|min:0|max:100',
+                'win_rate'       => 'required|numeric|min:0|max:100',
+                'total_profit'   => 'required|numeric|min:0',
+            ]);
+
+            $data = $request->only([
+                'name',
+                'average_return',
+                'followers',
+                'profit_share',
+                'win_rate',
+                'total_profit',
+            ]);
+
+            // If a new picture is uploaded, replace old
+            if ($request->hasFile('picture')) {
+                $file = $request->file('picture');
+                $uploadedFileUrl = $cloudinaryService->uploadFile($file->getRealPath());
+                $data['picture'] = $uploadedFileUrl;
+            }
+
+            $trader->update($data);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Trader updated successfully!',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Trader update error', [
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update trader. Try again.',
+            ], 500);
+        }
+    }
 }

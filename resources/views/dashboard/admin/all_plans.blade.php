@@ -67,18 +67,21 @@
       background-color: #c12736;
     }
 
-    .no-plans-message {
-      text-align: center;
-      margin-top: 80px;
-      color: #777;
+    .edit-btn {
+      position: absolute;
+      top: 16px;
+      right: 95px;
+      background-color: #1d72b8;
+      color: #fff;
+      padding: 6px 12px;
+      font-size: 13px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
 
-    .no-plans-message svg {
-      color: #bbb;
-    }
-
-    .no-plans-message p {
-      margin-bottom: 4px;
+    .edit-btn:hover {
+      background-color: #155d8b;
     }
 
     @media (max-width: 768px) {
@@ -94,12 +97,33 @@
         font-size: 14px;
       }
 
+      .edit-btn {
+        top: 12px;
+        right: 75px;
+        padding: 5px 10px;
+        font-size: 12px;
+      }
+
       .delete-btn {
         top: 12px;
         right: 12px;
         padding: 5px 10px;
         font-size: 12px;
       }
+    }
+
+    .no-plans-message {
+      text-align: center;
+      margin-top: 80px;
+      color: #777;
+    }
+
+    .no-plans-message svg {
+      color: #bbb;
+    }
+
+    .no-plans-message p {
+      margin-bottom: 4px;
     }
   </style>
 
@@ -110,13 +134,24 @@
       @if ($plans->count())
         @foreach ($plans as $plan)
           <div class="plan-card" id="plan-{{ $plan->id }}">
-            <div class="plan-title">{{ $plan->name }}</div>
+
+            <!-- Edit Button -->
+            <button
+              class="edit-btn"
+              onclick="window.location.href='{{ route('admin.plans.edit', ['id' => $plan->id]) }}'"
+            >
+              Edit
+            </button>
+
+            <!-- Delete Button -->
             <button
               class="delete-btn"
               onclick="deletePlan({{ $plan->id }}, '{{ route('admin.plans.destroy', ['id' => $plan->id]) }}')"
             >
               Delete
             </button>
+
+            <div class="plan-title">{{ $plan->name }}</div>
 
             <div class="plan-detail"><strong>ROI:</strong> {{ $plan->roi }}%</div>
             <div class="plan-detail"><strong>Minimum Amount:</strong> ${{ number_format($plan->min_amount, 2) }}</div>
@@ -185,4 +220,5 @@
       toastr.error("{{ session('error') }}");
     @endif
   </script>
+
 </x-admin>

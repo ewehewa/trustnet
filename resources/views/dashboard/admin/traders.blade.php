@@ -76,10 +76,29 @@
       font-weight: 600;
     }
 
-    .delete-btn {
+    .action-buttons {
       position: absolute;
       top: 16px;
       right: 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .edit-btn {
+      background-color: #1d72b8;
+      color: #fff;
+      padding: 6px 12px;
+      font-size: 13px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .edit-btn:hover {
+      background-color: #155d91;
+    }
+
+    .delete-btn {
       background-color: #e63946;
       color: #fff;
       padding: 6px 12px;
@@ -98,14 +117,6 @@
       margin-top: 80px;
       color: #777;
     }
-
-    .no-traders-message svg {
-      color: #bbb;
-    }
-
-    .no-traders-message p {
-      margin-bottom: 4px;
-    }
   </style>
 
   <div class="container-fluid trader-wrapper">
@@ -122,16 +133,24 @@
       @if ($traders->count())
         @foreach ($traders as $trader)
           <div class="trader-card" id="trader-{{ $trader->id }}">
+
+            <!-- Edit + Delete Buttons -->
+            <div class="action-buttons">
+              <button class="edit-btn" onclick="window.location='{{ route('admin.traders.edit', $trader->id) }}'">
+                Edit
+              </button>
+              <button
+                class="delete-btn"
+                onclick="deleteTrader({{ $trader->id }}, '{{ route('admin.traders.destroy', ['id' => $trader->id]) }}')"
+              >
+                Delete
+              </button>
+            </div>
+
             <div class="trader-title">
               <img src="{{ $trader->picture }}" alt="{{ $trader->name }}">
               {{ $trader->name }}
             </div>
-            <button
-              class="delete-btn"
-              onclick="deleteTrader({{ $trader->id }}, '{{ route('admin.traders.destroy', ['id' => $trader->id]) }}')"
-            >
-              Delete
-            </button>
 
             <div class="trader-detail"><strong>Average Return:</strong> {{ $trader->average_return }}%</div>
             <div class="trader-detail"><strong>Followers:</strong> {{ $trader->followers }}</div>
@@ -142,13 +161,11 @@
         @endforeach
       @else
         <div class="no-traders-message">
-          <svg xmlns="http://www.w3.org/2000/svg" width="70" height="70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" class="mb-3">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
           <p class="fs-5 fw-semibold">No traders available</p>
           <p class="text-muted">Please add a trader to get started.</p>
         </div>
       @endif
+
     </div>
   </div>
 
@@ -190,4 +207,5 @@
       });
     }
   </script>
+
 </x-admin>

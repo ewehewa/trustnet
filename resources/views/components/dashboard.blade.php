@@ -335,7 +335,7 @@ window.smartsupp||(function(d) {
     </a>
 
     <!-- Mail Us Button -->
-    <a href="mailto:support@example.com" class="btn btn-info btn-sm header-btn">
+    <a href="mailto:support@trustnetx.com" class="btn btn-info btn-sm header-btn">
         <i class="fas fa-envelope me-1"></i> Mail Us
     </a>
 
